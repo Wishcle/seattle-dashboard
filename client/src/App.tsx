@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import Greet from './components/Greet'
+import Welcome from './components/Welcome'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -18,6 +19,7 @@ function App() {
         </a>
       </div>
       <Greet />
+      <Welcome />
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
