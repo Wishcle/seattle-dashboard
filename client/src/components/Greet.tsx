@@ -1,6 +1,11 @@
+import { FC } from 'react'
 
-function Greet() {
-    return <h1>Hello, Wishcle!</h1>
+interface GreetProps {
+    name: string;
+}
+
+const Greet:FC<GreetProps> = (props) => {
+    return <h1>Hello, {props.name}</h1>
 }
 
 export default Greet
