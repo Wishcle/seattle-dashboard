@@ -21,7 +21,9 @@ function App() {
       <Greet name="Wishcle" />
       <Greet name="Riley" />
       <Greet name="Donny" />
-      <Welcome />
+      <Welcome id={1} />
+      <Welcome id={2} />
+      <Welcome id={3} />
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}

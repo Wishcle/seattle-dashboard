@@ -1,8 +1,14 @@
 import { Component } from 'react'
 
-class Welcome extends Component {
+interface Props {
+    id: number;
+}
+
+interface State {}
+
+class Welcome extends Component<Props, State> {
     render() {
-        return <h1>Class Component</h1>
+        return <h1>Class Component #{this.props.id}</h1>
     }
 }
 
