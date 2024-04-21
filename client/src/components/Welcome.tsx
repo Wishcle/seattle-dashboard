@@ -19,7 +19,7 @@ class Welcome extends Component<Props, State> {
     render() {
         return (
             <>
-                <button onClick={() => this.click()}>
+                <button onClick={this.click}>
                     Click me, id={this.props.id}
                 </button>
                 {this.renderWelcome()}
@@ -33,7 +33,7 @@ class Welcome extends Component<Props, State> {
         ) : <></>
     }
 
-    click() {
+    click = () => {
         this.setState((state, _props) => ({
             showWelcome: !state.showWelcome,
         }))
