@@ -5,35 +5,38 @@ interface Props {
 }
 
 interface State {
-    buttonClicked: boolean;
+    showWelcome: boolean;
 }
 
 class Welcome extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
         this.state = {
-            buttonClicked: false,
+            showWelcome: false,
         }
     }
 
     render() {
-        if (!this.state.buttonClicked) {
-            return (
+        return (
+            <>
                 <button onClick={() => this.click()}>
                     Click me, id={this.props.id}
                 </button>
-            )
-        } else {
-            return (
-                <h1>Thanks for clicking, id={this.props.id}</h1>
-            )
-        }
+                {this.renderWelcome()}
+            </>
+        )
+    }
+
+    renderWelcome(): JSX.Element {
+        return this.state.showWelcome ? (
+            <h1>Welcome, id={this.props.id}</h1>
+        ) : <></>
     }
 
     click() {
-        this.setState({
-            buttonClicked: true,
-        })
+        this.setState((state, _props) => ({
+            showWelcome: !state.showWelcome,
+        }))
     }
 }
 
