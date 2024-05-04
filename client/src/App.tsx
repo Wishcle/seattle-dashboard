@@ -1,8 +1,8 @@
-import './App.css'
+import MapComp from './components/Map'
 
 function App() {
   return (
-    <h1>hello</h1>
+    <MapComp />
   )
 }
 
