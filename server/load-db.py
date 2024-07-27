@@ -1,17 +1,21 @@
 
-import requests
+import sqlite3
 import time
-from typing import Optional
-from tqdm import tqdm
-from pathlib import Path
 from http import HTTPStatus
+from pathlib import Path
+from typing import Optional
+
+import requests
+from tqdm import tqdm
 
 BASE_URL = "https://data-seattlecitygis.opendata.arcgis.com/api/download/v1/items/{item}/{filetype}?layers=0"
 URL_CSV_COLLISIONS = BASE_URL.format(item="504838adcb124cf4a434e33bf420c4ad", filetype="csv")
 URL_CSV_PERSONS    = BASE_URL.format(item="f3e9dd827e934649972cd7469474598a", filetype="csv")
 URL_CSV_VEHICLES   = BASE_URL.format(item="90a68d4709b54327a6bc1dfa1b900f8d", filetype="csv")
 
-DATA_DIR = Path("data")
+DATABASE_ROOT = Path("db")
+DATABASE_FILE = DATABASE_ROOT / Path("seattle.db")
+DATABASE_CACHE = DATABASE_ROOT / Path("cache")
 
 def main():
     LoadDatabaseCmd(URL_CSV_PERSONS, "persons.csv").exec()
@@ -29,9 +33,15 @@ class LoadDatabaseCmd():
         self.file_name = file_name
 
     def exec(self) -> None:
+        self._init_folders()
         self._download_data_from_sdot()
         self._load_data_into_database()
         self._print_tables()
+
+    def _init_folders(self) -> None:
+        DATABASE_ROOT.mkdir(exist_ok=True)
+        DATABASE_CACHE.mkdir(exist_ok=True)
+        DATABASE_FILE.unlink(missing_ok=True)
 
     def _download_data_from_sdot(self) -> None:
         self._poll_for_ok_response()
@@ -61,10 +71,10 @@ class LoadDatabaseCmd():
     def _download_from_response(self):
         assert self.response is not None
         assert self.response.status_code == HTTPStatus.OK
+        assert DATABASE_CACHE.exists()
 
         print(f"request OK; downloading file to {self.file_name=}")
-        DATA_DIR.mkdir(exist_ok=True)
-        file_name = DATA_DIR / self.file_name
+        file_name = DATABASE_CACHE / self.file_name
         total_size = int(self.response.headers.get('content-length', 0))
         progress_bar = tqdm(total=total_size, unit='B', unit_scale=True)
 
