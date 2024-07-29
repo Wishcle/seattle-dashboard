@@ -16,9 +16,9 @@ DATABASE_FILE = DATABASE_ROOT / Path("seattle.db")
 DATABASE_CACHE = DATABASE_ROOT / Path("cache")
 
 BASE_URL = "https://data-seattlecitygis.opendata.arcgis.com/api/download/v1/items/{item}/{filetype}?layers=0"
-URL_CSV_COLLISIONS = BASE_URL.format(item="504838adcb124cf4a434e33bf420c4ad", filetype="csv")
-URL_CSV_PERSONS    = BASE_URL.format(item="f3e9dd827e934649972cd7469474598a", filetype="csv")
-URL_CSV_VEHICLES   = BASE_URL.format(item="90a68d4709b54327a6bc1dfa1b900f8d", filetype="csv")
+URL_CSV_COLLISION = BASE_URL.format(item="504838adcb124cf4a434e33bf420c4ad", filetype="csv")
+URL_CSV_PERSON    = BASE_URL.format(item="f3e9dd827e934649972cd7469474598a", filetype="csv")
+URL_CSV_VEHICLE   = BASE_URL.format(item="90a68d4709b54327a6bc1dfa1b900f8d", filetype="csv")
 
 @dataclass
 class Table():
@@ -31,8 +31,8 @@ class Table():
 
 def main():
     tables = [
-        Table("collisions", URL_CSV_COLLISIONS),
-        Table("persons", URL_CSV_PERSONS)]
+        Table("collision", URL_CSV_COLLISION),
+        Table("person", URL_CSV_PERSON)]
     LoadDatabaseCmd(tables).exec()
 
 
