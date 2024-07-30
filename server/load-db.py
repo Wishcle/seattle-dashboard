@@ -1,7 +1,6 @@
 
 import sched
 import sqlite3
-import time
 from dataclasses import dataclass
 from http import HTTPStatus
 from pathlib import Path
@@ -9,16 +8,20 @@ from typing import List, Optional
 
 import pandas
 import requests
+from sqlacodegen.codegen import CodeGenerator
+from sqlalchemy import MetaData, create_engine
 from tqdm import tqdm
 
 DATABASE_ROOT = Path("db")
 DATABASE_FILE = DATABASE_ROOT / Path("seattle.db")
 DATABASE_CACHE = DATABASE_ROOT / Path("cache")
+MODEL_FILE = Path("models.py")
 
 BASE_URL = "https://data-seattlecitygis.opendata.arcgis.com/api/download/v1/items/{item}/{filetype}?layers=0"
 URL_CSV_COLLISION = BASE_URL.format(item="504838adcb124cf4a434e33bf420c4ad", filetype="csv")
 URL_CSV_PERSON    = BASE_URL.format(item="f3e9dd827e934649972cd7469474598a", filetype="csv")
 URL_CSV_VEHICLE   = BASE_URL.format(item="90a68d4709b54327a6bc1dfa1b900f8d", filetype="csv")
+
 
 @dataclass
 class Table():
@@ -48,6 +51,7 @@ class LoadDatabaseCmd():
         self._download_data_from_sdot()
         self._load_data_into_database()
         self._print_tables()
+        self._generate_models_file()
 
     def _init_folders(self) -> None:
         DATABASE_ROOT.mkdir(exist_ok=True)
@@ -112,6 +116,16 @@ class LoadDatabaseCmd():
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
             print(cursor.fetchall())
+
+    def _generate_models_file(self) -> None:
+        # https://stackoverflow.com/a/68480955/6890681
+        # https://docs.sqlalchemy.org/en/20/changelog/migration_20.html#implicit-and-connectionless-execution-bound-metadata-removed
+        engine = create_engine(f"sqlite:///{DATABASE_FILE}")
+        metadata = MetaData()
+        metadata.bind = engine  # This avoids a deprecation warning. Doubt it's any better than silencing.
+        metadata.reflect(engine)
+        with open("models.py", "w") as f:
+            CodeGenerator(metadata).render(f)
 
 
 if __name__ == "__main__":
