@@ -1,4 +1,3 @@
-
 import sched
 import sqlite3
 from dataclasses import dataclass
@@ -15,13 +14,19 @@ DATABASE_FILE = DATABASE_ROOT / Path("seattle.db")
 DATABASE_CACHE = DATABASE_ROOT / Path("cache")
 
 BASE_URL = "https://data-seattlecitygis.opendata.arcgis.com/api/download/v1/items/{item}/{filetype}?layers=0"  # noqa: E501
-URL_CSV_COLLISION = BASE_URL.format(item="504838adcb124cf4a434e33bf420c4ad", filetype="csv")
-URL_CSV_PERSON = BASE_URL.format(item="f3e9dd827e934649972cd7469474598a", filetype="csv")
-URL_CSV_VEHICLE = BASE_URL.format(item="90a68d4709b54327a6bc1dfa1b900f8d", filetype="csv")
+URL_CSV_COLLISION = BASE_URL.format(
+    item="504838adcb124cf4a434e33bf420c4ad", filetype="csv"
+)
+URL_CSV_PERSON = BASE_URL.format(
+    item="f3e9dd827e934649972cd7469474598a", filetype="csv"
+)
+URL_CSV_VEHICLE = BASE_URL.format(
+    item="90a68d4709b54327a6bc1dfa1b900f8d", filetype="csv"
+)
 
 
 @dataclass
-class Table():
+class Table:
     name: str
     url: str  # To fetch the data from.
     url_fetch_delay: int = 0
@@ -29,14 +34,12 @@ class Table():
     file_path: Optional[Path] = None
 
 
-def main():
-    tables = [
-        Table("collision", URL_CSV_COLLISION),
-        Table("person", URL_CSV_PERSON)]
+def main() -> None:
+    tables = [Table("collision", URL_CSV_COLLISION), Table("person", URL_CSV_PERSON)]
     LoadDatabaseCmd(tables).exec()
 
 
-class LoadDatabaseCmd():
+class LoadDatabaseCmd:
     tables: List[Table]
     scheduler: Optional[sched.scheduler] = None
 
@@ -75,8 +78,12 @@ class LoadDatabaseCmd():
             server_status = response.json()["status"]
             print(
                 f"[{table.name}] ... request ACCEPTED; "
-                f"server says: {server_status}; sleep {table.url_fetch_delay}", flush=True)
-            self.scheduler.enter(table.url_fetch_delay, 0, self._poll_for_ok_response, (table,))
+                f"server says: {server_status}; sleep {table.url_fetch_delay}",
+                flush=True,
+            )
+            self.scheduler.enter(
+                table.url_fetch_delay, 0, self._poll_for_ok_response, (table,)
+            )
             return
 
         if status == HTTPStatus.OK:
@@ -91,12 +98,15 @@ class LoadDatabaseCmd():
         assert DATABASE_CACHE.exists()
 
         table.file_path = DATABASE_CACHE / f"{table.name}.csv"
-        total_size = int(table.url_response.headers.get('content-length', 0))
-        progress_bar = tqdm(total=total_size, unit='B', unit_scale=True, leave=False)
+        total_size = int(table.url_response.headers.get("content-length", 0))
+        progress_bar = tqdm(total=total_size, unit="B", unit_scale=True, leave=False)
 
-        print(f"[{table.name}] ... request OK; downloading file to {table.file_path=}", flush=True)
-        with tqdm(total=total_size, unit='B', unit_scale=True) as progress_bar:
-            with open(table.file_path, 'wb') as file:
+        print(
+            f"[{table.name}] ... request OK; downloading file to {table.file_path=}",
+            flush=True,
+        )
+        with tqdm(total=total_size, unit="B", unit_scale=True) as progress_bar:
+            with open(table.file_path, "wb") as file:
                 for data in table.url_response.iter_content(chunk_size=1024):
                     progress_bar.update(len(data))
                     file.write(data)
@@ -107,7 +117,7 @@ class LoadDatabaseCmd():
                 assert table.file_path is not None
                 with open(table.file_path) as csv_file:
                     df = pandas.read_csv(csv_file)
-                    df.to_sql(table.name, conn, if_exists='append', index=False)
+                    df.to_sql(table.name, conn, if_exists="append", index=False)
                     print(f"table '{table.name}' created.")
 
     def _print_tables(self) -> None:
