@@ -58,12 +58,13 @@ class LoadDatabaseCmd():
         print("Downloading data...")
         self.scheduler = sched.scheduler()
         for table in self.tables:
-            self.scheduler.enter(0, 0, self._poll_for_ok_response, [table])
+            self.scheduler.enter(0, 0, self._poll_for_ok_response, (table,))
         self.scheduler.run()
         print("...finished.\n")
 
     def _poll_for_ok_response(self, table: Table) -> None:
         print(f"[{table.name}] making request ... ", flush=True)
+        assert self.scheduler is not None
         response = requests.get(table.url)
         status = HTTPStatus(response.status_code)
 
@@ -73,7 +74,7 @@ class LoadDatabaseCmd():
             table.url_fetch_delay += 3
             server_status = response.json()["status"]
             print(f"[{table.name}] ... request ACCEPTED; server says: {server_status}; sleep {table.url_fetch_delay}", flush=True)
-            self.scheduler.enter(table.url_fetch_delay, 0, self._poll_for_ok_response, [table])
+            self.scheduler.enter(table.url_fetch_delay, 0, self._poll_for_ok_response, (table,))
             return
 
         if status == HTTPStatus.OK:
@@ -101,6 +102,7 @@ class LoadDatabaseCmd():
     def _load_data_into_database(self) -> None:
         with sqlite3.connect(DATABASE_FILE) as conn:
             for table in self.tables:
+                assert table.file_path is not None
                 with open(table.file_path) as csv_file:
                     df = pandas.read_csv(csv_file)
                     df.to_sql(table.name, conn, if_exists='append', index=False)
