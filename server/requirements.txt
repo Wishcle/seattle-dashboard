@@ -1,7 +1,9 @@
 certifi==2024.2.2
 charset-normalizer==3.3.2
+flake8==7.1.1
 idna==3.7
 isort==5.13.2
+mccabe==0.7.0
 mypy==1.11.1
 mypy-extensions==1.0.0
 numpy==2.0.1
@@ -9,6 +11,8 @@ packaging==24.0
 pandas==2.2.2
 pandas-stubs==2.2.2.240807
 pipdeptree==2.18.1
+pycodestyle==2.12.1
+pyflakes==3.2.0
 pyproj==3.6.1
 python-dateutil==2.9.0.post0
 pytz==2024.1
