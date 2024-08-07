@@ -1,6 +1,6 @@
 ## API
 
-### Set up Python dependencies with [`venv`](https://docs.python.org/3/library/venv.html)
+### Set up local Python environment with [`venv`](https://docs.python.org/3/library/venv.html)
 
 ```
 # Create venv:
@@ -15,4 +15,12 @@ pip install -r requirements.txt
 # Update `requirements.txt`:
 pip install <some-new-dependency>
 pip freeze > requirements.txt
+```
+
+### Install Pre-commit hooks
+
+This ensures that committed files adhere to type/style/formatting checks in `.pre-commit-config.yaml`
+
+```
+pre-commit install
 ```
