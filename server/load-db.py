@@ -29,7 +29,7 @@ class Table():
     file_path: Optional[Path] = None
 
 
-def main():
+def main() -> None:
     tables = [
         Table("collision", URL_CSV_COLLISION),
         Table("person", URL_CSV_PERSON)]

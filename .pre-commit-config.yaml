@@ -27,8 +27,12 @@ repos:
   hooks:
   - id: mypy
     files: ^server/
+    args: ["--config-file=server/setup.cfg"]
     additional_dependencies:
       [
+        numpy==2.0.1,
+        pandas-stubs==2.2.2.240807,
+        types-pytz==2024.1.0.20240417,
         types-pytz==2024.1.0.20240417,
         types-requests==2.32.0.20240712,
         types-tqdm==4.66.0.20240417,
