@@ -1,3 +1,8 @@
+server/db/cache/
+server/db/*.db
+.vscode
+
+## Original base template below.
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
