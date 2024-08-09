@@ -30,6 +30,8 @@ repos:
     args: ["--config-file=server/setup.cfg"]
     additional_dependencies:
       [
+        Flask==3.0.3,
+        SQLAlchemy==2.0.32,
         numpy==2.0.1,
         pandas-stubs==2.2.2.240807,
         types-pytz==2024.1.0.20240417,
