@@ -4,6 +4,7 @@ from typing import TypeVar
 from db.models.collision import Collision
 from db.models.person import Person
 from flask import Flask, Response, jsonify
+from flask_cors import CORS
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Select
@@ -16,7 +17,7 @@ CONFIG = {
 app = Flask(__name__)
 app.config.from_mapping(CONFIG)
 ENGINE = create_engine("sqlite:///db/seattle-save.db")
-
+CORS(app)
 
 # ========= #
 #   UTILS   #
@@ -29,6 +30,7 @@ SelectStatement = TypeVar(
 )
 
 
+# only works with full objects returned. individual fields need different handling.
 def results_as_json_for_(stmt: SelectStatement) -> Response:
     with Session(ENGINE) as session:
         results = session.execute(stmt).all()  # [(i1,), (i2,), ...]
@@ -50,7 +52,7 @@ def get_collisions_few() -> Response:
 @app.get("/collisions/many")
 def get_collisions_many() -> Response:
     return results_as_json_for_(
-        select(Collision).limit(100)
+        select(Collision).limit(1000).where(Collision.x.is_not(None))
     )
 
 
