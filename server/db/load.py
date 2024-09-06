@@ -26,7 +26,9 @@ class Table():
     url: str  # To fetch the data from.
     url_fetch_delay: int = 0
     url_response: Optional[requests.Response] = None
-    file_path: Optional[Path] = None
+
+    def file_path(self) -> Path:
+        return DATABASE_CACHE / f"{self.name}.csv"
 
 
 def main() -> None:
@@ -90,13 +92,12 @@ class LoadDatabaseCmd():
         assert table.url_response is not None
         assert DATABASE_CACHE.exists()
 
-        table.file_path = DATABASE_CACHE / f"{table.name}.csv"
         total_size = int(table.url_response.headers.get('content-length', 0))
         progress_bar = tqdm(total=total_size, unit='B', unit_scale=True, leave=False)
 
-        print(f"[{table.name}] ... request OK; downloading file to {table.file_path=}", flush=True)
+        print(f"[{table.name}] ... request OK; downloading to {table.file_path()=}", flush=True)
         with tqdm(total=total_size, unit='B', unit_scale=True) as progress_bar:
-            with open(table.file_path, 'wb') as file:
+            with open(table.file_path(), 'wb') as file:
                 for data in table.url_response.iter_content(chunk_size=1024):
                     progress_bar.update(len(data))
                     file.write(data)
@@ -104,8 +105,8 @@ class LoadDatabaseCmd():
     def _load_data_into_database(self) -> None:
         with sqlite3.connect(DATABASE_FILE) as conn:
             for table in self.tables:
-                assert table.file_path is not None
-                with open(table.file_path) as csv_file:
+                assert table.file_path() is not None
+                with open(table.file_path()) as csv_file:
                     df = pandas.read_csv(csv_file)
                     df.to_sql(table.name, conn, if_exists='append', index=False)
                     print(f"table '{table.name}' created.")
