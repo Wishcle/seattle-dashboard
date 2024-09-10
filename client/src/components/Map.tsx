@@ -31,16 +31,6 @@ interface Collision {
   y: number;
 }
 
-// The format of a GeoJSON "feature".
-interface Feature {
-  type: string;
-  id: number;
-  geometry: {
-    type: string;
-    coordinates: number[];
-  };
-}
-
 
 // ============ //
 //   RENDERERS  //
@@ -55,6 +45,7 @@ const RENDERER_HEATMAP = (() => {
     .setMidpoint(12)
     .getColors();
 
+  // Base color is transparent.
   const heatmapColors = ["rgba(0, 0, 0, 0)"].concat(gradientColors)
   const heatmapColorStops = heatmapColors.map(
     (c, i) => new HeatmapColorStop({
@@ -92,8 +83,8 @@ const RENDERER_POINTS = (() => {
 // ============= //
 
 const MapComp:FC<Props> = (_props) => {
-  const [features, setFeatures] = useState<Feature[]>([])
   const [mapView, setMapView] = useState<MapView | null>(null)
+  const [graphics, setGraphics] = useState<Graphic[]>([])
 
   const createMapView = () => {
     const map = new Map({
@@ -119,19 +110,10 @@ const MapComp:FC<Props> = (_props) => {
     setMapView(view);
   }
 
-  const plotFeatures = () => {
-    if (mapView == null || features.length == 0) {
+  const plotGraphics = () => {
+    if (mapView == null || graphics.length == 0) {
       return;
     }
-
-    const featureToGraphic = (feature: Feature) => {
-      const [x, y] = feature.geometry.coordinates;
-      const spatialReference = { wkid: 2926 };
-      const point = new Point({ x, y, spatialReference });
-      return new Graphic({ geometry: point });
-    };
-
-    const graphics = features.map(featureToGraphic);
 
     const layer = new FeatureLayer({
       source: graphics,
@@ -140,6 +122,7 @@ const MapComp:FC<Props> = (_props) => {
       renderer: RENDERER_POINTS,
     });
 
+    mapView.map.removeAll();
     mapView.map.add(layer);
 
     // For now, just to showcase both renderers, switch to the heatmap after three seconds.
@@ -153,31 +136,27 @@ const MapComp:FC<Props> = (_props) => {
   };
 
   const fetchCollisions = () => {
-    const collisionToFeature = (collision: Collision) => {
-      return {
-        type: "Feature",
-        id: collision.OBJECTID,
-        geometry: {
-          type: "Point",
-          coordinates: [
-            collision.x,
-            collision.y
-          ]
-        }
-      }
-    }
+    const collisionToGraphic = (collision: Collision) => {
+      return new Graphic({
+        geometry: new Point({
+          x: collision.x,
+          y: collision.y,
+          spatialReference: { wkid: 2926 },
+        }),
+      });
+    };
 
     (async () => {
       const response = await fetch(URL_COLLISIONS_MANY);
       const collisions = await response.json();
-      const newFeatures = collisions.map(collisionToFeature);
-      setFeatures(newFeatures);
+      const newGraphics = collisions.map(collisionToGraphic);
+      setGraphics(newGraphics);
     })();
   };
 
   useEffect(createMapView, []);
   useEffect(fetchCollisions, []);
-  useEffect(plotFeatures, [mapView, features])
+  useEffect(plotGraphics, [mapView, graphics])
 
   return <div id={MAP_DIV_ID} />;
 }
